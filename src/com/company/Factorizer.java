@@ -30,8 +30,8 @@ public class Factorizer implements Runnable {
     private BigInteger product;
     private BigInteger step;
     private BigInteger max;
-    BigInteger factor1;
-    BigInteger factor2;
+    private BigInteger factor1;
+    private BigInteger factor2;
 
     public Factorizer(BigInteger step, BigInteger start, WorkStatus workStatus, BigInteger max, BigInteger product) {
         this.step = step;
@@ -42,21 +42,10 @@ public class Factorizer implements Runnable {
     }
 
 
-/*    public boolean isPrime(BigInteger number) {
+    public boolean isPrime(BigInteger number) {
         boolean result = true;
         for (BigInteger d = new BigInteger("2"); d.compareTo(number.sqrt()) <= 0; d = d.add(BigInteger.ONE)) {
             if (number.remainder(d).equals(BigInteger.ZERO))
-                result = false;
-        }
-        return result;
-    }*/
-
-    public boolean isPrimeLong(long number) {
-        if (number <= 1)
-            return false;
-        boolean result = true;
-        for (long denominator = 2; denominator < Math.sqrt(number); denominator++) {
-            if (number % denominator == 0)
                 result = false;
         }
         return result;
@@ -65,62 +54,38 @@ public class Factorizer implements Runnable {
 
     @Override
     public void run() {
-/*
-        if (isPrime(product)) {
-            System.out.println("No factorization possible");
-            workStatus.markCompleted(true);
-        }
-*/
 
 
-        //BigInteger number = start;
-        long number = start.longValue();
-        long longMax = max.longValue();
-        long longProduct = product.longValue();
-        long longStep = step.longValue();
-
-        while (number <= longMax && !workStatus.isCompleted()) {
-            //System.out.println(this.hashCode() + " Checking " + number + " and " + longProduct / number);
-            if (longProduct % number == 0 && isPrimeLong(number)) {
+        BigInteger number = start;
+        while (number.compareTo(max) < 0 && !workStatus.isCompleted()) {
+            if (product.remainder(number).compareTo(BigInteger.ZERO) == 0 && isPrime(number)) {
                 synchronized (workStatus) {
-                   // System.out.println("FOUND STOP");
-                    if(workStatus.isCompleted()){
+                    // System.out.println("FOUND STOP");
+                    if (workStatus.isCompleted()) {
                         return;
                     }
+
+                    factor1 = number;
+                    factor2 = product.divide(number);
                     workStatus.markCompleted(true);
-                    System.out.println(this + " Factor1: " + number + " Factor2: " + longProduct / number);
+                    System.out.println(this + " Factor1: " + number + " Factor2: " + product.divide(number));
+                    return;
                 }
 
 
-
             }
+            number = number.add(step);
 
-//            if (!isPrime(number))
-//                number = number.add(step);
-//            System.out.println(this.hashCode() + " Checking " + number + " and " + product.divide(number));
-//            if (product.remainder(number).compareTo(BigInteger.ZERO) == 0 && isPrime(number)) {
-//                synchronized (workStatus) {
-//                   // System.out.println("FOUND STOP");
-//                    if(workStatus.isCompleted()){
-//                        return;
-//                    }
-//                    factor1 = number;
-//                    factor2 = number.divide(product);
-//                    workStatus.markCompleted(true);
-//                    System.out.println(this + " Factor1: " + number + " Factor2: " + product.divide(number));
-//                }
-//
-//
-//            }
-            number = number + longStep;
 
         }
+
 
     }
 
 
     public static void main(String[] args) throws InterruptedException {
         // Read input.
+
         InputStreamReader streamReader = new InputStreamReader(System.in);
         BufferedReader consoleReader = new BufferedReader(streamReader);
         String input;
@@ -153,6 +118,17 @@ public class Factorizer implements Runnable {
             for (int i = 0; i < numThreads; i++) {
                 threads[i].join();
             }
+            //If all factorizers have null factors, no factors has been found
+            int nullCount = 0;
+            for (Factorizer f : factorizers) {
+                if (f.factor1 == null) {
+                    nullCount++;
+                    if (numThreads <= nullCount) {
+                        System.out.println("No factorization possible");
+                    }
+                }
+            }
+
 
             long stop = System.nanoTime();
             System.out.println("\nExecution time (seconds): " + (stop - start) / 1000000000.0);
