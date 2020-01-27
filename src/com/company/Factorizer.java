@@ -30,8 +30,7 @@ public class Factorizer implements Runnable {
     private BigInteger product;
     private BigInteger step;
     private BigInteger max;
-    private BigInteger factor1;
-    private BigInteger factor2;
+
 
     public Factorizer(BigInteger step, BigInteger start, WorkStatus workStatus, BigInteger max, BigInteger product) {
         this.step = step;
@@ -65,8 +64,6 @@ public class Factorizer implements Runnable {
                         return;
                     }
 
-                    factor1 = number;
-                    factor2 = product.divide(number);
                     workStatus.markCompleted(true);
                     System.out.println(this + " Factor1: " + number + " Factor2: " + product.divide(number));
                     return;
@@ -118,15 +115,9 @@ public class Factorizer implements Runnable {
             for (int i = 0; i < numThreads; i++) {
                 threads[i].join();
             }
-            //If all factorizers have null factors, no factors has been found
-            int nullCount = 0;
-            for (Factorizer f : factorizers) {
-                if (f.factor1 == null) {
-                    nullCount++;
-                    if (numThreads <= nullCount) {
-                        System.out.println("No factorization possible");
-                    }
-                }
+            //if it aint done it aint done
+            if(!workStatus.isCompleted()){
+                System.out.println("No factorization possible");
             }
 
 
