@@ -13,7 +13,7 @@ import java.util.concurrent.locks.Lock;
 public class Factorizer implements Runnable {
 
     public static class WorkStatus {
-        private volatile boolean completed;
+        private boolean completed;
 
         public boolean isCompleted() {
             return completed;
