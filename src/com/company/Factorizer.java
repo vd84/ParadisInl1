@@ -7,7 +7,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.math.BigInteger;
-import java.util.concurrent.locks.Lock;
 
 
 public class Factorizer implements Runnable {
@@ -65,7 +64,7 @@ public class Factorizer implements Runnable {
                     }
 
                     workStatus.markCompleted(true);
-                    System.out.println(this + " Factor1: " + number + " Factor2: " + product.divide(number));
+                    System.out.println("Factor1: " + number + " Factor2: " + product.divide(number));
                     return;
                 }
 
