@@ -14,12 +14,15 @@ public class Factorizer implements Runnable {
     public static class WorkStatus {
         private boolean completed;
 
+
         public boolean isCompleted() {
             return completed;
+
         }
 
-        public synchronized void markCompleted(boolean completed) {
+        public void markCompleted(boolean completed) {
             this.completed = completed;
+
         }
 
     }
@@ -52,7 +55,6 @@ public class Factorizer implements Runnable {
 
     @Override
     public void run() {
-
 
         BigInteger number = start;
         while (number.compareTo(max) < 0 && !workStatus.isCompleted()) {
@@ -115,7 +117,7 @@ public class Factorizer implements Runnable {
                 threads[i].join();
             }
             //if it aint done it aint done
-            if(!workStatus.isCompleted()){
+            if (!workStatus.isCompleted()) {
                 System.out.println("No factorization possible");
             }
 
