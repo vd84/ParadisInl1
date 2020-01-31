@@ -7,24 +7,40 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.math.BigInteger;
+import java.util.concurrent.locks.ReentrantLock;
 
 
 public class Factorizer implements Runnable {
 
     public static class WorkStatus {
-        private boolean completed;
+        private boolean completed = false;
+        private ReentrantLock completedLock = new ReentrantLock();
 
-
-        public boolean isCompleted() {
-            return completed;
-
+        private boolean isCompleted() {
+            if (completedLock.tryLock()) {
+                try {
+                    return completed;
+                } finally {
+                    completedLock.unlock();
+                }
+            }
+            return false;
         }
 
-        public void markCompleted(boolean completed) {
-            this.completed = completed;
+        private void markCompleted(BigInteger factor1, BigInteger factor2) {
+            completedLock.lock();
+            try {
+                if (!completed) {
+                    this.completed = true;
+                    System.out.println("Factor 1: " + factor1 + " Factor 2: " + factor2);
+                }
+            } finally {
+                if (completedLock.isHeldByCurrentThread()) {
+                    completedLock.unlock();
+                }
+            }
 
         }
-
     }
 
     private final WorkStatus workStatus;
@@ -59,16 +75,13 @@ public class Factorizer implements Runnable {
         BigInteger number = start;
         while (number.compareTo(max) < 0 && !workStatus.isCompleted()) {
             if (product.remainder(number).compareTo(BigInteger.ZERO) == 0 && isPrime(number)) {
-                synchronized (workStatus) {
-                    // System.out.println("FOUND STOP");
-                    if (workStatus.isCompleted()) {
-                        return;
-                    }
-
-                    workStatus.markCompleted(true);
-                    System.out.println("Factor1: " + number + " Factor2: " + product.divide(number));
+                // System.out.println("FOUND STOP");
+                if (workStatus.isCompleted()) {
                     return;
                 }
+
+                workStatus.markCompleted(number, product.divide(number));
+                return;
 
 
             }
